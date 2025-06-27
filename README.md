@@ -1,5 +1,5 @@
 # Human Intracranial Single Unit Sorting
-[![DOI](https://zenodo.org/badge/891756132.svg)](https://doi.org/10.5281/zenodo.14217838)
+[![DOI](https://zenodo.org/badge/1009843306.svg)](https://doi.org/10.5281/zenodo.15758231)
 
 Cognitive neuroscience rapidly evolved following the possibility to record single neurons in humans.
 
