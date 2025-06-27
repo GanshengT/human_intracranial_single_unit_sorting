@@ -1,4 +1,6 @@
 # Human Intracranial Single Unit Sorting
+[![DOI](https://zenodo.org/badge/891756132.svg)](https://doi.org/10.5281/zenodo.14217838)
+
 Cognitive neuroscience rapidly evolved following the possibility to record single neurons in humans.
 
 To date, the recordings comes from medical procedures in which implantation of the electrode into the human brain is a necessary part of the clinical treatment, For example, invasive epilepsy monitoring using the so-called “Behnke-Fried” electrodes.
