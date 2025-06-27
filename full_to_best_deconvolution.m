@@ -1,0 +1,92 @@
+function xOpt = full_to_best_deconvolution(b, A, x, lambda, template_length)
+    notConverged = true;
+    while notConverged
+        current_objective_fc_value = objectiveFunction_spike_template(A, b, x, lambda);
+        one_indices = find(x==1);
+        corresponding_decrease = zeros(length(one_indices), 1);
+
+        % get 1 indice
+        % calculate objective function and store the location and objective
+        % function decrease if new objective fc < current_objective_fc_value
+        % bestDecrease = 0;
+        % bestIndex = 0;
+        
+        % Iterate over indices of elements that are 1
+        for idx = 1:length(one_indices)
+            i = one_indices(idx); 
+
+            xTemp = x;
+            xTemp(i) = 0;
+            
+            % Calculate new objective function value
+            new_objective_fc_value = objectiveFunction_spike_template(A, b, xTemp, lambda);
+            
+            % Calculate the decrease in the objective function
+            decrease = new_objective_fc_value - current_objective_fc_value;
+            corresponding_decrease(idx) = decrease;
+            % if decrease < bestDecrease
+            %     bestDecrease = decrease;
+            %     bestIndex = i;
+            % end
+        end
+
+        if min(corresponding_decrease) >= 0
+            % no need to update
+            break
+        end
+
+
+        solution = reshape(x, [length(b), round(size(A, 2) / length(b))]);
+        clusters = {}; 
+        for idx = 1:length(one_indices)
+            i = one_indices(idx);
+            [row, col] = ind2sub(size(solution), i);
+            foundCluster = false;
+            for clusterIdx = 1:length(clusters)
+                cluster = clusters{clusterIdx};
+                % Check if 'i' is within template_length of any index in this cluster
+                for j = 1:length(cluster)
+                    [row_j, col_j] = ind2sub(size(solution), cluster(j));
+                    if abs(row - row_j) <= template_length
+                        % If 'i' is close enough, add it to the current cluster
+                        clusters{clusterIdx} = [cluster, i];
+                        foundCluster = true;
+                        break;
+                    end
+                end
+                if foundCluster
+                    break;
+                end
+            end
+            if ~foundCluster
+                % If 'i' is not added to any cluster, create a new cluster for it
+                clusters{end+1} = [i];
+            end
+        end
+        
+        % Iterate through each cluster to find the index with the greatest decrease
+        notConverged = false;
+        bestDecreaseInCluster = 0; % not necessary just to be safe
+        for clusterIdx = 1:length(clusters)
+            cluster = clusters{clusterIdx};
+            % Initialize with the first element's decrease as the best to compare
+            bestDecreaseInCluster = corresponding_decrease(find(one_indices == cluster(1), 1));
+            bestIndexInCluster = cluster(1);
+            for j = 2:length(cluster)
+                idx_in_decreases = find(one_indices == cluster(j), 1);
+                if corresponding_decrease(idx_in_decreases) < bestDecreaseInCluster
+                    bestDecreaseInCluster = corresponding_decrease(idx_in_decreases);
+                    bestIndexInCluster = cluster(j);
+                end
+            end
+            % Once the best index in the cluster is found, set the corresponding x to 0
+            if bestDecreaseInCluster < 0 % Ensure this is indeed a decrease
+                x(bestIndexInCluster) = 0;
+                notConverged = true;
+                % No need to update 'current_objective_fc_value' here as it will be recalculated at the beginning of the while loop
+            end
+        end
+    end
+
+    xOpt = x;
+end
